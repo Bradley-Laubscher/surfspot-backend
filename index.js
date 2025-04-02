@@ -37,33 +37,38 @@ const checkSurfConditions = async () => {
       const surfData = response.data.hourly;
       const waveHeights = surfData.wave_height;
       const wavePeriods = surfData.wave_period;
+      const timestamps = surfData.time;
 
-      // Calculate average wave height & wave period
-      const avgWaveHeight =
-        waveHeights.reduce((sum, value) => sum + value, 0) / waveHeights.length;
-      const avgWavePeriod =
-        wavePeriods.reduce((sum, value) => sum + value, 0) / wavePeriods.length;
+      let consecutiveHours = 0;
+      let goodConditionDetected = false;
 
-      console.log(
-        `🌊 ${location.name}: Avg Wave Height: ${avgWaveHeight.toFixed(
-          2
-        )}m, Avg Wave Period: ${avgWavePeriod.toFixed(2)}s`
-      );
+      for (let i = 0; i < timestamps.length; i++) {
+        const hour = new Date(timestamps[i]).getHours();
 
-      // Store locations with ideal surf conditions (Example: Wave height > 1.5m & Wave period > 10s)
-      if (avgWaveHeight > 1.5 && avgWavePeriod > 10) {
-        bestLocations.push({ name: location.name, avgWaveHeight, avgWavePeriod });
+        if (hour >= 8 && hour <= 18) {
+          if (waveHeights[i] > 1.5 && wavePeriods[i] > 10) {
+            consecutiveHours++;
+            if (consecutiveHours >= 3) {
+              goodConditionDetected = true;
+              break; // No need to check further
+            }
+          } else {
+            consecutiveHours = 0; // Reset count if conditions break
+          }
+        }
+      }
+
+      if (goodConditionDetected) {
+        console.log(`🏄 ${location.name} has at least 3 consecutive hours of good surf.`);
+        bestLocations.push({ name: location.name });
       }
     } catch (error) {
       console.error(`❌ Error fetching data for ${location.name}:`, error.message);
     }
   }
 
-  // Sort locations by best wave height & wave period
-  bestLocations.sort((a, b) => b.avgWaveHeight - a.avgWaveHeight || b.avgWavePeriod - a.avgWavePeriod);
-
   if (bestLocations.length > 0) {
-    console.log("🏄 Best Surf Locations Today:", bestLocations.map((loc) => loc.name).join(", "));
+    console.log("🏄 Best Surf Locations Today:", bestLocations.map(loc => loc.name).join(", "));
     sendSurfNotifications(bestLocations);
   } else {
     console.log("No ideal surf conditions detected.");
@@ -107,8 +112,32 @@ const sendSurfNotifications = async (bestLocations) => {
   }
 };
 
-// Run surf check every 20 seconds
-setInterval(checkSurfConditions, 100000);
+const scheduleDailyCheck = () => {
+  const now = new Date();
+  const nextRun = new Date();
+
+  // Set nextRun to 9 AM the next day
+  nextRun.setHours(9, 0, 0, 0);
+  if (now.getHours() >= 9) {
+    // If it's already past 9 AM, schedule for the next day
+    nextRun.setDate(nextRun.getDate() + 1);
+  }
+
+  const timeUntilNextRun = nextRun - now; // Time difference in milliseconds
+
+  console.log(`⏳ Next surf check scheduled at: ${nextRun}`);
+
+  setTimeout(() => {
+    checkSurfConditions(); // Run the function at 9 AM
+    scheduleDailyCheck();  // Schedule the next day's check
+  }, timeUntilNextRun);
+};
+
+// Start the daily scheduler when the server runs
+scheduleDailyCheck();
+
+// Run surf check every 20 seconds (For testing)
+//setInterval(checkSurfConditions, 20000);
 
 // Start server
 app.listen(3000, () => {
