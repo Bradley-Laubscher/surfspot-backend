@@ -8,7 +8,16 @@ const app = express();
 app.use(express.json()); // Enable JSON parsing
 
 // Load Firebase credentials correctly
-const serviceAccount = JSON.parse(fs.readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, "utf8"));
+//const serviceAccount = JSON.parse(fs.readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, "utf8"));
+let serviceAccount;
+
+if (process.env.GOOGLE_SERVICE_ACCOUNT) {
+  serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT);
+} else {
+  serviceAccount = JSON.parse(
+    fs.readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, "utf8")
+  );
+}
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -112,32 +121,32 @@ const sendSurfNotifications = async (bestLocations) => {
   }
 };
 
-const scheduleDailyCheck = () => {
-  const now = new Date();
-  const nextRun = new Date();
-
-  // Set nextRun to 9 AM the next day
-  nextRun.setHours(9, 0, 0, 0);
-  if (now.getHours() >= 9) {
-    // If it's already past 9 AM, schedule for the next day
-    nextRun.setDate(nextRun.getDate() + 1);
-  }
-
-  const timeUntilNextRun = nextRun - now; // Time difference in milliseconds
-
-  console.log(`⏳ Next surf check scheduled at: ${nextRun}`);
-
-  setTimeout(() => {
-    checkSurfConditions(); // Run the function at 9 AM
-    scheduleDailyCheck();  // Schedule the next day's check
-  }, timeUntilNextRun);
-};
-
-// Start the daily scheduler when the server runs
-scheduleDailyCheck();
+//const scheduleDailyCheck = () => {
+//  const now = new Date();
+//  const nextRun = new Date();
+//
+//  // Set nextRun to 9 AM the next day
+//  nextRun.setHours(9, 0, 0, 0);
+//  if (now.getHours() >= 9) {
+//    // If it's already past 9 AM, schedule for the next day
+//    nextRun.setDate(nextRun.getDate() + 1);
+//  }
+//
+//  const timeUntilNextRun = nextRun - now; // Time difference in milliseconds
+//
+//  console.log(`⏳ Next surf check scheduled at: ${nextRun}`);
+//
+//  setTimeout(() => {
+//    checkSurfConditions(); // Run the function at 9 AM
+//    scheduleDailyCheck();  // Schedule the next day's check
+//  }, timeUntilNextRun);
+//};
+//
+//// Start the daily scheduler when the server runs
+//scheduleDailyCheck();
 
 // Run surf check every 10 seconds (For testing)
-//setInterval(checkSurfConditions, 10000);
+setInterval(checkSurfConditions, 10000);
 
 // Start server
 app.listen(3000, () => {
