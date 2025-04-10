@@ -20,7 +20,11 @@ if (process.env.GOOGLE_SERVICE_ACCOUNT) {
 }
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert({
+    projectId: serviceAccount.project_id,
+    clientEmail: serviceAccount.client_email,
+    privateKey: serviceAccount.private_key.replace(/\\n/g, '\n'),
+  }),
   databaseURL: "https://surfspot-884c9.firebaseio.com",
 });
 
@@ -121,32 +125,32 @@ const sendSurfNotifications = async (bestLocations) => {
   }
 };
 
-const scheduleDailyCheck = () => {
-  const now = new Date();
-  const nextRun = new Date();
-
-  // Set nextRun to 9 AM the next day
-  nextRun.setHours(9, 0, 0, 0);
-  if (now.getHours() >= 9) {
-    // If it's already past 9 AM, schedule for the next day
-    nextRun.setDate(nextRun.getDate() + 1);
-  }
-
-  const timeUntilNextRun = nextRun - now; // Time difference in milliseconds
-
-  console.log(`⏳ Next surf check scheduled at: ${nextRun}`);
-
-  setTimeout(() => {
-    checkSurfConditions(); // Run the function at 9 AM
-    scheduleDailyCheck();  // Schedule the next day's check
-  }, timeUntilNextRun);
-};
-
-// Start the daily scheduler when the server runs
-scheduleDailyCheck();
+//const scheduleDailyCheck = () => {
+//  const now = new Date();
+//  const nextRun = new Date();
+//
+//  // Set nextRun to 9 AM the next day
+//  nextRun.setHours(9, 0, 0, 0);
+//  if (now.getHours() >= 9) {
+//    // If it's already past 9 AM, schedule for the next day
+//    nextRun.setDate(nextRun.getDate() + 1);
+//  }
+//
+//  const timeUntilNextRun = nextRun - now; // Time difference in milliseconds
+//
+//  console.log(`⏳ Next surf check scheduled at: ${nextRun}`);
+//
+//  setTimeout(() => {
+//    checkSurfConditions(); // Run the function at 9 AM
+//    scheduleDailyCheck();  // Schedule the next day's check
+//  }, timeUntilNextRun);
+//};
+//
+//// Start the daily scheduler when the server runs
+//scheduleDailyCheck();
 
 // Run surf check every 10 seconds (For testing)
-//setInterval(checkSurfConditions, 10000);
+setInterval(checkSurfConditions, 10000);
 
 // Start server
 app.listen(3000, () => {
