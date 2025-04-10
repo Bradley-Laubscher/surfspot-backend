@@ -136,8 +136,8 @@ const scheduleDailyCheck = () => {
 // Start the daily scheduler when the server runs
 scheduleDailyCheck();
 
-// Run surf check every 20 seconds (For testing)
-//setInterval(checkSurfConditions, 20000);
+// Run surf check every 10 seconds (For testing)
+//setInterval(checkSurfConditions, 10000);
 
 // Start server
 app.listen(3000, () => {
