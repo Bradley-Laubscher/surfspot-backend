@@ -125,6 +125,12 @@ const sendSurfNotifications = async (bestLocations) => {
   }
 };
 
+// UptimeRobot call to wake backend up (Render backend spins-down after 15 mins)
+app.get("/ping", (req, res) => {
+  console.log("✅ Ping received from UptimeRobot");
+  res.send("👍 Backend is alive");
+});
+
 const scheduleDailyCheck = () => {
   const now = new Date();
   const nextRun = new Date();
