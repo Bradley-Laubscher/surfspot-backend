@@ -1,0 +1,13 @@
+name: Daily Render Wake-Up
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # Runs daily at 9AM UTC
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping Render backend
+        run: curl -s https://your-backend.onrender.com/ping?ts=$(date +%s)
