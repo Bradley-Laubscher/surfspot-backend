@@ -10,4 +10,4 @@ jobs:
 
     steps:
       - name: Ping Render backend
-        run: curl -s https://your-backend.onrender.com/ping?ts=$(date +%s)
+        run: curl -s https://surfspot-backend.onrender.com/ping?ts=$(date +%s)
