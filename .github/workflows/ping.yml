@@ -2,7 +2,7 @@ name: Daily Render Wake-Up
 
 on:
   schedule:
-    - cron: '0 9 * * *'  # Runs daily at 9AM UTC
+    - cron: '0 7 * * *'  # Runs daily at 9AM UTC
 
 jobs:
   ping:
